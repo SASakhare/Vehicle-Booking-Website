@@ -25,9 +25,9 @@ const connectDB = async () => {
     }
     // new connection
 
-    if(!cached.promise){
+    if (!cached.promise) {
 
-        cached.promise=mongoose.connect(mongodbURL).then(c=>c.connection)
+        cached.promise = mongoose.connect(mongodbURL).then(c => c.connection)
     }
 
     // promise pending
