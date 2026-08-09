@@ -10,7 +10,7 @@ const PublicHome = () => {
     const [authOpen, setAuthOpen] = useState<boolean>(false);
     return (
         <>
-            <HeroSection />
+            <HeroSection onAuthRequired={() => setAuthOpen(true)} />
             <VehicleSlider />
             <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
 

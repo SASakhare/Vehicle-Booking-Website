@@ -3,7 +3,7 @@ import { Bike, Bus, Car, Truck } from 'lucide-react'
 import { motion } from 'motion/react'
 import React from 'react'
 
-const HeroSection = () => {
+const HeroSection = ({onAuthRequired}:{onAuthRequired:()=>void}) => {
     return (
         <div className='relative min-h-screen w-full overflow-hidden'>
             <div className='absolute inset-0 bg-cover bg-center' style={{ backgroundImage: "url('/heroImage.jpg')" }} />
@@ -46,6 +46,7 @@ const HeroSection = () => {
                     transition={{ delay: 0.2, duration: 0.3 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={onAuthRequired}
                     className='mt-12 px-10 py-4 bg-white text-black rounded-full font-semibold shadow-2xl'
                 >
                     Book Now
