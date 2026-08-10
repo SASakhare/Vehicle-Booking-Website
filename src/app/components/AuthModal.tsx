@@ -17,13 +17,14 @@ type stepType = "login" | "signup" | "otp";
 
 const AuthModal = ({ open, onClose }: propType) => {
 
-    const [step, setSetp] = useState<stepType>("login");
+    const [step, setStep] = useState<stepType>("signup");
 
     const [name, setName] = useState<string>("");
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string|null>(null);
+    const [otp, setOtp] = useState(["", "", "", "", "", ""])
 
     const { data } = useSession();
     console.log(data);
@@ -39,7 +40,8 @@ const AuthModal = ({ open, onClose }: propType) => {
                     'Content-Type': "application/json"
                 }
             })
-
+            setStep("otp")
+            setError(null);
             console.log(data);
             setLoading(false)
 
@@ -60,6 +62,7 @@ const AuthModal = ({ open, onClose }: propType) => {
             setLoading(true)
             const response = await signIn("credentials", { email, password, redirect: false })
             console.log(response);
+            setError(null);
             setLoading(false)
 
         } catch (error: any) {
@@ -78,6 +81,7 @@ const AuthModal = ({ open, onClose }: propType) => {
             setLoading(true)
             const response = await signIn("google")
             console.log(response);
+            setError(null);
             setLoading(false)
 
         } catch (error: any) {
@@ -88,6 +92,51 @@ const AuthModal = ({ open, onClose }: propType) => {
             setError(error.response.data.message! ?? "something went wrong");
 
 
+        }
+
+    }
+
+    const handleChangeOtp = (index: number, value: string) => {
+
+        if (!/^[0-9]?$/.test(value)) return;
+
+        const updated = [...otp];
+        updated[index] = value;
+        setOtp(updated);
+
+        if (value && index < otp.length - 1) {
+            document.getElementById(`otp-${index + 1}`)?.focus()
+        }
+
+        if (!value && index > 0) {
+            document.getElementById(`otp-${index - 1}`)?.focus()
+        }
+    }
+
+
+    const handleVerifyEmail = async () => {
+
+        try {
+
+            setLoading(true)
+            const { data } = await axios.post('/api/auth/verify-email',
+                { email, otp: otp.join("") },
+                {
+                    headers: {
+                        'Content-Type': "application/json"
+                    }
+                })
+            setStep("login")
+            setError(null);
+            console.log(data);
+            setLoading(false)
+
+
+        } catch (error: any) {
+            setLoading(false)
+            console.log("login error :");
+            console.log(error.response.data.message);
+            setError(error.response.data.message! ?? "something went wrong");
         }
 
     }
@@ -187,7 +236,7 @@ const AuthModal = ({ open, onClose }: propType) => {
                                                         <div className='flex items-center justify-center gap-2'>
                                                             Dont have an account ?
                                                             <div
-                                                                onClick={() => setSetp("signup")}
+                                                                onClick={() => setStep("signup")}
                                                                 className='text-black font-medium hover:underline hover:cursor-pointer'
                                                             >
                                                                 SignUp
@@ -253,18 +302,76 @@ const AuthModal = ({ open, onClose }: propType) => {
                                                             onClick={handleSignUp}
                                                             className='hover:cursor-pointer w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex justify-center items-center'>
                                                             {
-                                                                !loading ? <span>SignUp</span> : <span><Loader2 size={18} className='text-white animate-spin' /></span>
+                                                                !loading ? <span>Send OTP</span> : <span><Loader2 size={18} className='text-white animate-spin' /></span>
                                                             }
 
                                                         </button>
                                                         <div className='flex items-center justify-center gap-2'>
                                                             Do have an account ?
                                                             <div
-                                                                onClick={() => setSetp("login")}
+                                                                onClick={() => setStep("login")}
                                                                 className='text-black font-medium hover:underline hover:cursor-pointer'
                                                             >
                                                                 Login
                                                             </div>
+                                                        </div>
+                                                    </div>
+
+                                                </motion.div>
+                                            )
+                                        }
+
+
+                                    </div>
+
+                                    <div>
+                                        {
+                                            step == "otp" && (
+                                                <motion.div
+                                                    key={"login"}
+                                                    initial={{ opacity: 0, x: 20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    exit={{ opacity: 0, x: -20 }}
+                                                >
+                                                    <h1 className='text-xl font-semibold text-center w-full'>Verify Email</h1>
+                                                    <div className='mt-6 flex justify-between gap-2'>
+                                                        {
+                                                            otp.map((digit, i) => (
+                                                                <input
+                                                                    key={i}
+                                                                    id={`otp-${i}`}
+                                                                    onChange={(e) => handleChangeOtp(i, e.target.value)}
+                                                                    value={digit}
+                                                                    maxLength={1}
+                                                                    className='w-10 h-12 sm:w-12 text-center text-lg font-semibold 
+                                                                rounded-xl bg-white border border-black/20 outline-none
+                                                                '
+                                                                />
+                                                            ))
+                                                        }
+                                                    </div>
+                                                    {
+                                                        error && <p className='text-red-500 mt-4'>
+                                                            *{error}
+                                                        </p>
+                                                    }
+
+                                                    <button
+                                                        disabled={loading}
+                                                        onClick={handleVerifyEmail}
+                                                        className='mt-5 hover:cursor-pointer w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex justify-center items-center'>
+                                                        {
+                                                            !loading ? <span>Verify and Create Account</span> : <span><Loader2 size={18} className='text-white animate-spin' /></span>
+                                                        }
+
+                                                    </button>
+                                                    <div className='flex items-center justify-center gap-2 '>
+                                                        didn`t receive otp ?
+                                                        <div
+                                                            onClick={() => setStep("login")}
+                                                            className='text-black font-medium underline hover:underline hover:cursor-pointer'
+                                                        >
+                                                            resend
                                                         </div>
                                                     </div>
 
