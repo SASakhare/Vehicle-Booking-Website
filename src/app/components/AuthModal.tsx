@@ -4,6 +4,7 @@ import axios from 'axios'
 import { Loader2, Lock, Mail, User, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { em, span } from 'motion/react-client'
+import { signIn, useSession } from 'next-auth/react'
 import Image from 'next/image'
 import React, { useState } from 'react'
 
@@ -23,6 +24,10 @@ const AuthModal = ({ open, onClose }: propType) => {
     const [password, setPassword] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState(null);
+
+    const { data } = useSession();
+    console.log(data);
+
 
     const handleSignUp = async () => {
 
@@ -49,7 +54,41 @@ const AuthModal = ({ open, onClose }: propType) => {
         }
 
     }
+
     const handleLogin = async () => {
+        try {
+            setLoading(true)
+            const response = await signIn("credentials", { email, password, redirect: false })
+            console.log(response);
+            setLoading(false)
+
+        } catch (error: any) {
+
+            setLoading(false)
+            console.log("login error :");
+            console.log(error.response.data.message);
+            setError(error.response.data.message! ?? "something went wrong");
+
+
+        }
+
+    }
+    const handleGoogleLogin = async () => {
+        try {
+            setLoading(true)
+            const response = await signIn("google")
+            console.log(response);
+            setLoading(false)
+
+        } catch (error: any) {
+
+            setLoading(false)
+            console.log("login error :");
+            console.log(error.response.data.message);
+            setError(error.response.data.message! ?? "something went wrong");
+
+
+        }
 
     }
 
@@ -84,6 +123,7 @@ const AuthModal = ({ open, onClose }: propType) => {
                                     </div>
 
                                     <button
+                                        onClick={handleGoogleLogin}
                                         className='w-full h-11 rounded-xl border  border-black/30 flex items-center justify-center gap-3 
                                 text-sm font-semibold hover:bg-black hover:text-white transition hover:cursor-pointer
                                 '
