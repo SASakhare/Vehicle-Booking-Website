@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation"
 import AuthModal from "./AuthModal"
 import { useSelector } from "react-redux"
 import { RootState } from "@/redux/store"
+import ProfileComponent from "./ProfileComponent"
 
 const NAV_Items = ["Home", "Bookings", "About Us", "Contact"]
 
@@ -16,6 +17,7 @@ const Navbar = () => {
     // console.log(pathname);
 
     const [authOpen, setAuthOpen] = useState<boolean>(false);
+    const [profileOpen, setProfileOpen] = useState<boolean>(false);
 
     const { userData } = useSelector((state: RootState) => state.user)
 
@@ -102,12 +104,19 @@ const Navbar = () => {
                                 ) :
                                 (
                                     <button
-                                        className="w-11 h-11 rounded-full bg-white text-black font-bold hover:cursor-pointer">
+                                        className="w-11 h-11 rounded-full bg-white text-black font-bold hover:cursor-pointer"
+                                        onClick={() => setProfileOpen((p) => !p)}
+                                    >
                                         {
                                             userData.name.charAt(0).toUpperCase()
                                         }
                                     </button>
+
                                 )
+                        }
+
+                        {
+                            <ProfileComponent profileOpen={profileOpen} setProfileOpen={setProfileOpen} userData={userData}/>
                         }
                     </div>
 
