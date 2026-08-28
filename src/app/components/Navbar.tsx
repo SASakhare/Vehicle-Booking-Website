@@ -6,6 +6,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import AuthModal from "./AuthModal"
+import { useSelector } from "react-redux"
+import { RootState } from "@/redux/store"
 
 const NAV_Items = ["Home", "Bookings", "About Us", "Contact"]
 
@@ -14,6 +16,14 @@ const Navbar = () => {
     // console.log(pathname);
 
     const [authOpen, setAuthOpen] = useState<boolean>(false);
+
+    const { userData } = useSelector((state: RootState) => state.user)
+
+    console.log(`userData : ${userData}`);
+    console.log(`name : ${userData?.name}`);
+
+
+
 
     return (
         <>
@@ -78,11 +88,32 @@ const Navbar = () => {
                     }
                 </div>
 
-                <button
-                    onClick={() => setAuthOpen(true)}
-                    className="px-4 py-1.5 rounded-full bg-white text-black text-sm">
-                    Login
-                </button>
+                <div className="flex items-center gap-3 relative">
+
+                    <div className=" md:block relative">
+                        {
+                            !userData ?
+                                (
+                                    <button
+                                        onClick={() => setAuthOpen(true)}
+                                        className="px-4 py-1.5 rounded-full bg-white text-black text-sm hover:cursor-pointer">
+                                        Login
+                                    </button>
+                                ) :
+                                (
+                                    <button
+                                        className="w-11 h-11 rounded-full bg-white text-black font-bold hover:cursor-pointer">
+                                        {
+                                            userData.name.charAt(0).toUpperCase()
+                                        }
+                                    </button>
+                                )
+                        }
+                    </div>
+
+
+
+                </div>
 
 
             </motion.div>
