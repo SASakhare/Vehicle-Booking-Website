@@ -5,12 +5,13 @@ import { motion } from 'framer-motion'
 import { Bike, Car, ChevronRight, LogOut, Truck } from 'lucide-react'
 import { AnimatePresence } from 'motion/react'
 import { signOut } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import React, { Dispatch } from 'react'
 import { useDispatch } from 'react-redux'
 
 const ProfileComponent = ({ profileOpen, setProfileOpen, userData }: { profileOpen: boolean, setProfileOpen: Dispatch<React.SetStateAction<boolean>>, userData: IUser | null }) => {
 
-
+    const router = useRouter();
     const dispatch = useDispatch<AppDispatch>();
     const handleLogout = async () => {
 
@@ -50,7 +51,11 @@ const ProfileComponent = ({ profileOpen, setProfileOpen, userData }: { profileOp
 
                             {
                                 userData?.role != "partner" && (
-                                    <div className='w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-xl'>
+                                    <div className='w-full flex items-center gap-3 p-3 hover:bg-gray-100 rounded-xl'
+                                        onClick={() => {
+                                            router.push("/partner/onboarding/vehicle")
+                                        }}
+                                    >
 
                                         <div className='flex -space-x-2'>
                                             <div className='w-6 h-6 rounded-full bg-black text-white flex justify-center items-center'>

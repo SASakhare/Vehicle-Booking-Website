@@ -6,6 +6,8 @@ const PUBLIC_ROUTES = ["/"]
 
 const PUBLIC_APIS = ["/api/auth"]
 
+// const PARTNER_ONBOARDING_ROUTES=
+
 
 export async function proxy(req: NextRequest) {
 
@@ -55,6 +57,10 @@ export async function proxy(req: NextRequest) {
     }
 
     if (pathname.startsWith("/partner")) {
+
+        if (pathname.startsWith("/partner/onboarding")) {
+            return NextResponse.next();
+        }
         if (role != 'partner') {
             return NextResponse.redirect(new URL("/", req.url))
         }
@@ -65,8 +71,8 @@ export async function proxy(req: NextRequest) {
 }
 
 
-export const config={
-    matcher:['/((?!_next/static|_next/image|favicon.ico).*)'],
+export const config = {
+    matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }
 
 
