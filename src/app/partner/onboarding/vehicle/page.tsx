@@ -33,6 +33,7 @@ const Page = () => {
                 className='w-full max-w-xl bg-white rounded-3xl border border-gray-200 shadow-[0_25px_70px_rgba(0,0,0,0.15)] p-6 sm:p-8'
 
             >
+    
                 <div
                     className='relative text-center'
                 >
