@@ -82,21 +82,26 @@ export async function POST(req: Request) {
             return Response.json(
                 vehicle, { status: 200 }
             )
-        } else {
-            vehicle = await Vehicle.create({
-                owner: session.user.id,
-                type,
-                number: vehicleNumber,
-                vehicleModel
-            })
-
-            return Response.json(
-                vehicle, {
-                status: 201
-            }
-            )
         }
+        vehicle = await Vehicle.create({
+            owner: session.user.id,
+            type,
+            number: vehicleNumber,
+            vehicleModel
+        })
 
+        if (user.partnerOnBoardingSteps < 1) {
+            user.partnerOnBoardingSteps = 1
+        }
+        
+        user.role = "partner"
+        await user.save();
+
+        return Response.json(
+            vehicle, {
+            status: 201
+        }
+        )
 
     } catch (error) {
         console.log("Error-Vehicle Create :");
