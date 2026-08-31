@@ -93,7 +93,7 @@ export async function POST(req: Request) {
         if (user.partnerOnBoardingSteps < 1) {
             user.partnerOnBoardingSteps = 1
         }
-        
+
         user.role = "partner"
         await user.save();
 
@@ -116,13 +116,72 @@ export async function POST(req: Request) {
     }
 
 
-
-
-
 }
 
 
+export async function GET(req: Request) {
+    try {
 
+        await connectDB();
+
+        const session = await auth();
+
+        if (!session || !session.user?.email) {
+            return Response.json({
+                message: "unauthorized"
+            }, {
+                status: 400
+            })
+        }
+
+        const user = await User.findOne({
+            email: session.user.email,
+        })
+
+        if (!user) {
+            return Response.json({
+                message: "unauthorized"
+            }, {
+                status: 400
+            })
+        }
+
+
+        const vehicle = await Vehicle.findOne({
+            owner: user._id
+        })
+
+        if (!vehicle) {
+
+            return Response.json(
+                {
+                    message: "vehicle not registered"
+                },
+                {
+                    status: 404
+                }
+            )
+        }
+
+        return Response.json(
+            vehicle, {
+            status: 200
+        }
+        )
+
+    } catch (error) {
+
+        console.log("Error-Vehicle Get :");
+        console.log(error);
+
+
+        return Response.json({
+            message: "Server Error"
+        }, {
+            status: 500
+        })
+    }
+}
 
 
 
