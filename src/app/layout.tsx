@@ -4,6 +4,7 @@ import "./globals.css";
 import Provider from "./components/Provider";
 import ReduxProvider from "@/redux/ReduxProvider";
 import InitUser from "@/InitUser";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,6 +33,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <ReduxProvider>
             <InitUser />
             {children}
+            <Toaster position="top-right"
+              toastOptions={{
+                classNames: {
+                  // Tailor your custom red or green background variations
+                  error: 'bg-red-500 text-white border-red-600',
+                  success: 'bg-green-500 text-white border-green-600',
+                }
+              }}
+            />
           </ReduxProvider>
 
         </Provider>

@@ -67,8 +67,11 @@ export async function POST(req: Request) {
             })
         }
 
+        console.log("user :",user);
+        
+
         let vehicle = await Vehicle.findOne({
-            owner: session.user.id
+            owner: user._id
         })
 
         if (vehicle) {
@@ -84,7 +87,7 @@ export async function POST(req: Request) {
             )
         }
         vehicle = await Vehicle.create({
-            owner: session.user.id,
+            owner: user._id,
             type,
             number: vehicleNumber,
             vehicleModel

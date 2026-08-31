@@ -2,9 +2,10 @@
 import React, { useState } from 'react'
 
 import { motion } from "motion/react"
-import { ArrowLeft, Bike, Car, Package, Truck } from 'lucide-react'
+import { ArrowLeft, Bike, Car, Circle, Loader2, Package, Truck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-
+import axios from 'axios'
+import { toast } from 'sonner'
 
 const VEHICLES = [
     { id: "bike", label: "Bike", icon: Bike, desc: "2 wheeler" },
@@ -21,6 +22,28 @@ const Page = () => {
     const [vehicleType, setVehicleType] = useState<string>("");
     const [vehicleNumber, setVehicleNumber] = useState<string>("");
     const [vehicleModel, setVehicleModel] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false)
+
+    const handleVehicle = async () => {
+        try {
+            setLoading(true)
+            const { data } = await axios.post("/api/partner/onboarding/vehicle", {
+                type: vehicleType,
+                number: vehicleNumber,
+                vehicleModel
+            })
+
+            console.log(data);
+            toast.success("vehicle data successfully uploaded")
+            setLoading(false)
+            router.push('/partner/onboarding/documents')
+
+        } catch (error: any) {
+            setLoading(false)
+            console.log(error.response.data);
+            toast.error(error?.response?.data?.message ?? "server error")
+        }
+    }
 
     return (
         <div
@@ -33,7 +56,7 @@ const Page = () => {
                 className='w-full max-w-xl bg-white rounded-3xl border border-gray-200 shadow-[0_25px_70px_rgba(0,0,0,0.15)] p-6 sm:p-8'
 
             >
-    
+
                 <div
                     className='relative text-center'
                 >
@@ -138,7 +161,7 @@ const Page = () => {
                         <label htmlFor="vn" className='text-xs font-semibold text-gray-500'>Vehicle Number</label>
                         <input
                             value={vehicleNumber}
-                            onChange={(e) => setVehicleNumber(e.target.value)}
+                            onChange={(e) => setVehicleNumber(e.target.value.toUpperCase())}
                             placeholder='MH12ABC1234' type="text" id='vn'
                             className='mt-2 w-full border-b border-gray-300 pb-2 text-sm focus:outline-none transition focus:border-black' />
                     </div>
@@ -153,15 +176,36 @@ const Page = () => {
 
                 </div>
 
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
+                {
+                    !loading ? (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={async () => {
+                                await handleVehicle();
+                            }}
 
-                    className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
+                            className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
                     flex items-center justify-center gap-2 disabled:opacity-40 transition'
-                >
-                    Continue
-                </motion.button>
+                        >
+                            Continue
+                        </motion.button>
+                    ) : (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={async () => {
+                                await handleVehicle();
+                            }}
+                            disabled
+                            className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
+                    flex items-center justify-center gap-2 disabled:opacity-40 transition'
+                        >
+                            <Loader2 className='h-8 w-8 text-white animate-spin' size={8} />
+                        </motion.button>
+                    )
+                }
+
 
 
             </motion.div>
