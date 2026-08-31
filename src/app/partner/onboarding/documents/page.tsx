@@ -1,12 +1,61 @@
 "use client"
 
-import { ArrowLeft, FileCheck, UploadCloud } from 'lucide-react'
+import axios from 'axios'
+import { ArrowLeft, FileCheck, Loader2, UploadCloud } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
+import { toast } from 'sonner'
+
+type docsType = "aadhar" | "license" | "rc"
 
 const Page = () => {
     const router = useRouter();
+    const [loading, setLoading] = useState<boolean>(false);
+
+    const [docs, setDocs] = useState<Record<docsType, File | null>>({
+        aadhar: null,
+        license: null,
+        rc: null
+    });
+
+    const handleImage = (doc: docsType, file: File | null) => {
+
+        if (!file) {
+            return
+        }
+
+        setDocs((prev: Record<docsType, File | null>) => ({ ...prev, [doc]: file }))
+    }
+
+
+    const handleDocs = async () => {
+
+        try {
+            setLoading(true)
+            const formData = new FormData()
+
+            if (!docs.aadhar || !docs.license || !docs.rc) {
+                toast.error("upload all documents")
+                return null
+            }
+
+            formData.append("aadhar", docs?.aadhar)
+            formData.append("license", docs?.license)
+            formData.append("rc", docs?.rc)
+
+            const { data } = await axios.post("/api/partner/onboarding/documents", formData);
+            console.log(data);
+            toast.success("vehicle data successfully uploaded")
+            setLoading(false)
+            router.push('/partner/onboarding/bank')
+
+        } catch (error: any) {
+            setLoading(false)
+            console.log(error.response.data);
+            toast.error(error?.response?.data?.message ?? "server error")
+        }
+    }
 
     return (
         <div
@@ -73,10 +122,17 @@ const Page = () => {
                             >
                                 Upload
                             </span>
-                            <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
-                                <UploadCloud size={18} />
+                            <div >
+                                {
+                                    docs?.aadhar?.name ? `${docs.aadhar.name}` :
+
+                                        <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
+                                            <UploadCloud size={18} />
+                                        </div>
+                                }
                             </div>
                         </div>
+                        <input type='file' accept='image/*,.pdf' hidden onChange={(e) => handleImage("aadhar", (e.target?.files?.[0] || null))} />
 
                     </motion.label>
 
@@ -89,7 +145,7 @@ const Page = () => {
                         <div
                         >
                             <p className='text-sm font-semibold'>
-                                Driving Lincense
+                                Driving License
                             </p>
                             <p className='text-sm text-gray-500'>
                                 Valid driving License
@@ -101,10 +157,16 @@ const Page = () => {
                             >
                                 Upload
                             </span>
-                            <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
-                                <UploadCloud size={18} />
+                            <div >
+                                {
+                                    docs?.license?.name ? `${docs.license.name}` :
+                                        <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
+                                            <UploadCloud size={18} />
+                                        </div>
+                                }
                             </div>
                         </div>
+                        <input type='file' accept='image/*,.pdf' hidden onChange={(e) => handleImage("license", (e.target?.files?.[0] || null))} />
 
                     </motion.label>
 
@@ -130,12 +192,19 @@ const Page = () => {
                             >
                                 Upload
                             </span>
-                            <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
-                                <UploadCloud size={18} />
+                            <div >
+                                {
+                                    docs?.rc?.name ? `${docs.rc.name}` :
+                                        <div className='w-10 h-10 rounded-full bg-black text-white flex items-center justify-center'>
+                                            <UploadCloud size={18} />
+                                        </div>
+                                }
                             </div>
                         </div>
+                        <input type='file' accept='image/*,.pdf' hidden onChange={(e) => handleImage("rc", (e.target?.files?.[0] || null))} />
 
                     </motion.label>
+
 
                 </div>
 
@@ -144,20 +213,39 @@ const Page = () => {
                 >
                     <FileCheck />
                     <p>
-                        Document arer securely stored and manually verified by our team
+                        Document are securely stored and manually verified by our team
                     </p>
 
                 </div>
 
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
+                {
+                    !loading ? (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={async () => {
+                                await handleDocs();
+                            }}
 
-                    className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
+                            className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
                     flex items-center justify-center gap-2 disabled:opacity-40 transition'
-                >
-                    Continue
-                </motion.button>
+                        >
+                            Continue
+                        </motion.button>
+                    ) : (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+
+                            disabled
+                            className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
+                    flex items-center justify-center gap-2 disabled:opacity-40 transition'
+                        >
+                            <Loader2 className='h-8 w-8 text-white animate-spin' size={8} />
+                        </motion.button>
+                    )
+                }
+
 
             </motion.div>
 
@@ -165,5 +253,4 @@ const Page = () => {
         </div>
     )
 }
-
 export default Page

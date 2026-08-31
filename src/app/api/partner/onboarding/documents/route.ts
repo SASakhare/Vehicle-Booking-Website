@@ -3,9 +3,7 @@ import uploadOnClodinary from "@/lib/cloudinary";
 import connectDB from "@/lib/db";
 import PartnerDocs from "@/models/partnerDocs.model";
 import User from "@/models/user.model";
-import Vehicle from "@/models/vehicle.model";
 
-const VEHICLE_REGEX = /^[A-Z]{2}[0-9]{1,2}[A-Z]{0,2}[0-9]{4}$/;
 
 export async function POST(req: Request) {
 
@@ -52,6 +50,7 @@ export async function POST(req: Request) {
                 status: 400
             })
         }
+        console.log("----------1 get all docs ---------");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const updatePayload: any = {
@@ -72,6 +71,7 @@ export async function POST(req: Request) {
 
             updatePayload.aadharUrl = url
         }
+        console.log("----------aadhar uploaded ---------");
         if (license) {
             const url = await uploadOnClodinary(license)
 
@@ -86,6 +86,7 @@ export async function POST(req: Request) {
             updatePayload.licenseUrl = url
         }
 
+        console.log("----------license uploaded ---------");
         if (rc) {
             const url = await uploadOnClodinary(rc)
 
@@ -100,6 +101,7 @@ export async function POST(req: Request) {
             updatePayload.rcUrl = url
         }
 
+        console.log("----------rc uploaded ---------");
 
         let partnerDocs = await PartnerDocs.findOne({
             owner: user._id,
@@ -113,11 +115,11 @@ export async function POST(req: Request) {
 
             await partnerDocs.save()
 
-            return Response.json({ partnerDocs }, { status: 200 })
+            return Response.json(partnerDocs , { status: 200 })
         }
 
 
-        partnerDocs = await partnerDocs.create({
+        partnerDocs = await PartnerDocs.create({
             owner: user._id,
             ...updatePayload
         })
@@ -127,9 +129,9 @@ export async function POST(req: Request) {
             await user.save()
         }
 
-        return Response.json({
+        return Response.json(
             partnerDocs
-        }, {
+        , {
             status: 201
         })
 
