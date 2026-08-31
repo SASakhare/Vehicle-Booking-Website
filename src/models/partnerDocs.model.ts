@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { GiStrikingArrows } from "react-icons/gi";
 
 interface IPartnerDocs {
     owner: mongoose.Types.ObjectId
@@ -16,30 +15,30 @@ interface IPartnerDocs {
 
 
 
-const partnerDocsSchema=new mongoose.Schema<IPartnerDocs>({
-    owner:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"User",
-        required:true,
+const partnerDocsSchema = new mongoose.Schema<IPartnerDocs>({
+    owner: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
     },
-    aadharUrl:String,
-    rcUrl:String,
-    licenseUrl:String,
+    aadharUrl: String,
+    rcUrl: String,
+    licenseUrl: String,
 
-    status:{
-        type:String,
-        enum:["approved","rejected","pending"],
-        default:"pending"
+    status: {
+        type: String,
+        enum: ["approved", "rejected", "pending"],
+        default: "pending"
     },
 
-    rejectionReason:String
+    rejectionReason: String
 
-},{
-    timestamps:true
+}, {
+    timestamps: true
 })
 
 
-const PartnerDocs=mongoose.models.PartnerDocs || mongoose.model("PartnerDocs",partnerDocsSchema)
+const PartnerDocs = mongoose.models.PartnerDocs || mongoose.model("PartnerDocs", partnerDocsSchema)
 
 export default PartnerDocs
 
