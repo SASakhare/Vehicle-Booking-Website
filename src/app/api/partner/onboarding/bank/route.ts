@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         const { accountHolder, accountNumber, upi, ifsc, mobileNumber } = await req.json()
 
 
-        if (!accountHolder || !accountNumber || !ifsc || mobileNumber) {
+        if (!accountHolder || !accountNumber || !ifsc || !mobileNumber) {
             return Response.json({
                 message: "send all bank details & mobile number"
             }, {
@@ -44,7 +44,7 @@ export async function POST(req: Request) {
         }
 
 
-        const partnerBank = PartnerBank.findOneAndUpdate(
+        const partnerBank = await PartnerBank.findOneAndUpdate(
             { owner: user._id, },
             {
                 accountHolder,
@@ -66,6 +66,7 @@ export async function POST(req: Request) {
         }
 
         await user.save()
+        console.log(`partnerBank :${partnerBank}`);
 
         return Response.json(partnerBank, { status: 200 })
 

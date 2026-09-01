@@ -2,7 +2,7 @@
 import React, { useState } from 'react'
 
 import { motion } from "motion/react"
-import { ArrowLeft, Bike, Car, Circle, Loader2, Package, Truck } from 'lucide-react'
+import { ArrowLeft, Bike, Car, Loader2, Package, Truck } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import { toast } from 'sonner'

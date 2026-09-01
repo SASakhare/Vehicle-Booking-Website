@@ -1,12 +1,41 @@
 "use client"
 
-import { ArrowLeft, BadgeCheck, CheckCircle, CreditCardIcon, FileCheck, Landmark, Phone } from 'lucide-react'
+import axios from 'axios'
+import { ArrowLeft, BadgeCheck, CheckCircle, CreditCardIcon, Landmark, Loader2, Phone } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useRouter } from 'next/navigation'
-import React from 'react'
+import React, { useState } from 'react'
 import { MdBookOnline } from "react-icons/md";
+import { toast } from 'sonner'
 const Page = () => {
+
+    //* accountHolder, accountNumber, upi, ifsc, mobileNumber 
     const router = useRouter();
+    const [loading, setLoading] = useState<boolean>(false);
+    const [accountHolder, setAccountHolder] = useState<string>("");
+    const [accountNumber, setAccountNumber] = useState<string>("");
+    const [upi, setUpi] = useState<string>("");
+    const [ifsc, setIfsc] = useState<string>("");
+    const [mobileNumber, setMobileNumber] = useState<string>("");
+
+    const handleBankDocs = async () => {
+        try {
+            setLoading(true)
+
+            const { data } = await axios.post("/api/partner/onboarding/bank", {
+                accountHolder, accountNumber, upi, ifsc, mobileNumber
+            });
+            console.log(data);
+            toast.success("Bank documents uploaded successfully")
+            setLoading(false)
+            router.push('/partner/onboarding/bank')
+
+        } catch (error: any) {
+            setLoading(false)
+            console.log(error.response.data);
+            toast.error(error?.response?.data?.message ?? "server error")
+        }
+    }
 
     return (
         <div
@@ -67,6 +96,8 @@ const Page = () => {
                                 <BadgeCheck />
                             </div>
                             <input
+                                value={accountHolder}
+                                onChange={(e) => setAccountHolder(e.target.value)}
                                 id='ahn'
                                 type='text'
                                 placeholder='As per Bank records'
@@ -90,6 +121,8 @@ const Page = () => {
                                 <CreditCardIcon />
                             </div>
                             <input
+                                value={accountNumber}
+                                onChange={(e) => setAccountNumber(e.target.value)}
                                 id='ahn'
                                 type='text'
                                 placeholder='enter account number'
@@ -113,6 +146,8 @@ const Page = () => {
                                 <Landmark />
                             </div>
                             <input
+                                value={ifsc}
+                                onChange={(e) => setIfsc(e.target.value)}
                                 id='ahn'
                                 type='text'
                                 placeholder='HDFC000'
@@ -136,6 +171,8 @@ const Page = () => {
                                 <Phone />
                             </div>
                             <input
+                                value={mobileNumber}
+                                onChange={(e) => setMobileNumber(e.target.value)}
                                 id='ahn'
                                 type='text'
                                 placeholder='10 digit mobile number'
@@ -159,6 +196,8 @@ const Page = () => {
                                 <MdBookOnline size={28} />
                             </div>
                             <input
+                                value={upi}
+                                onChange={(e) => setUpi(e.target.value)}
                                 id='ahn'
                                 type='text'
                                 placeholder='username@ybl'
@@ -179,16 +218,34 @@ const Page = () => {
                     </p>
 
                 </div>
+                {
+                    !loading ? (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                            onClick={async () => {
+                                await handleBankDocs();
+                            }}
 
-                <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.97 }}
-
-                    className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
+                            className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
                     flex items-center justify-center gap-2 disabled:opacity-40 transition'
-                >
-                    Continue
-                </motion.button>
+                        >
+                            Continue
+                        </motion.button>
+                    ) : (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+
+                            disabled
+                            className='mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold 
+                    flex items-center justify-center gap-2 disabled:opacity-40 transition'
+                        >
+                            <Loader2 className='h-8 w-8 text-white animate-spin' size={8} />
+                        </motion.button>
+                    )
+                }
+
 
 
             </motion.div>

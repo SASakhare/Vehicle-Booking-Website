@@ -37,6 +37,7 @@ const Page = () => {
 
             if (!docs.aadhar || !docs.license || !docs.rc) {
                 toast.error("upload all documents")
+                setLoading(false)
                 return null
             }
 
