@@ -3,70 +3,69 @@ import { sendMail } from "@/lib/sendMail";
 import User from "@/models/user.model";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
-import { use } from "react";
 
 
 export async function POST(req: NextRequest) {
 
-    try {
+  try {
 
-        const { name, email, password } = await req.json();
+    const { name, email, password } = await req.json();
 
-        // console.log(`${name}`);
+    // console.log(`${name}`);
 
-        await connectDB();
+    await connectDB();
 
-        console.log("Database connected");
-
-
-        let user = await User.findOne({ email });
-
-        if (user && user.isEmailVerified) {
-            return NextResponse.json(
-                { message: "Email already exist" },
-                { status: 400 }
-            )
-        }
+    console.log("Database connected");
 
 
-        if (password.length < 6) {
-            return NextResponse.json(
-                { message: "password must be at least 6 character" },
-                { status: 400 }
-            )
-        }
+    let user = await User.findOne({ email });
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
-
-        if (user && !user.isEmailVerified) {
-
-            user.otp = otp;
-            user.otpExpiresAt = otpExpiresAt;
-
-            await user.save();
-
-        } else {
+    if (user && user.isEmailVerified) {
+      return NextResponse.json(
+        { message: "Email already exist" },
+        { status: 400 }
+      )
+    }
 
 
-            const hashedPassword = await bcrypt.hash(password, 10)
+    if (password.length < 6) {
+      return NextResponse.json(
+        { message: "password must be at least 6 character" },
+        { status: 400 }
+      )
+    }
 
-            console.log("password hashed");
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-            user = await User.create({
-                name,
-                email,
-                password: hashedPassword,
-                otp,
-                otpExpiresAt,
-            })
+    if (user && !user.isEmailVerified) {
 
-            console.log("user created");
+      user.otp = otp;
+      user.otpExpiresAt = otpExpiresAt;
 
-        }
+      await user.save();
+
+    } else {
 
 
-        const html = `<!DOCTYPE html>
+      const hashedPassword = await bcrypt.hash(password, 10)
+
+      console.log("password hashed");
+
+      user = await User.create({
+        name,
+        email,
+        password: hashedPassword,
+        otp,
+        otpExpiresAt,
+      })
+
+      console.log("user created");
+
+    }
+
+
+    const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -202,35 +201,35 @@ export async function POST(req: NextRequest) {
 
 </body>
 </html>`
-        try {
-            await sendMail(
-                email,
-                "Your OTP for Email Verification",
-                html
-            );
-        } catch (error) {
-            console.log('Email Error - Register');
-            console.log(error);
-            
-            
-            return NextResponse.json(
-                { message: "Invalid Email ,Enter Correct Email." },
-                { status: 400 }
-            )
-        }
-
-        return NextResponse.json(
-            { user },
-            { status: 201 }
-        )
-
+    try {
+      await sendMail(
+        email,
+        "Your OTP for Email Verification",
+        html
+      );
     } catch (error) {
+      console.log('Email Error - Register');
+      console.log(error);
 
-        return NextResponse.json(
-            { message: `register error ${error}` },
-            { status: 400 }
-        )
+
+      return NextResponse.json(
+        { message: "Invalid Email ,Enter Correct Email." },
+        { status: 400 }
+      )
     }
+
+    return NextResponse.json(
+      { user },
+      { status: 201 }
+    )
+
+  } catch (error) {
+
+    return NextResponse.json(
+      { message: `register error ${error}` },
+      { status: 400 }
+    )
+  }
 
 }
 

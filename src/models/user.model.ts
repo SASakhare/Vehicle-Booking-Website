@@ -6,7 +6,7 @@ export interface IUser extends Document {
 
     name: string;
     email: string;
-    password: string;
+    password?: string;
     createdAt: Date;
     role: "user" | "partner" | "admin";
     isEmailVerified?: boolean;
@@ -32,7 +32,6 @@ const userSchema = new mongoose.Schema<IUser>({
 
     password: {
         type: String,
-        required: true,
     },
     isEmailVerified: {
         type: Boolean,

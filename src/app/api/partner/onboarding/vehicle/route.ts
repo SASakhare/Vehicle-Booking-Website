@@ -67,8 +67,8 @@ export async function POST(req: Request) {
             })
         }
 
-        console.log("user :",user);
-        
+        console.log("user :", user);
+
 
         let vehicle = await Vehicle.findOne({
             owner: user._id
@@ -92,12 +92,20 @@ export async function POST(req: Request) {
             number: vehicleNumber,
             vehicleModel
         })
+        
+        console.log('partnerOnBoardingSteps :');
+        console.log(user);
+        
+        
 
-        if (user.partnerOnBoardingSteps < 1) {
+        if (!user.partnerOnBoardingSteps || user.partnerOnBoardingSteps < 1) {
             user.partnerOnBoardingSteps = 1
+            console.log("inside");
+            
         }
 
         user.role = "partner"
+
         await user.save();
 
         return Response.json(
