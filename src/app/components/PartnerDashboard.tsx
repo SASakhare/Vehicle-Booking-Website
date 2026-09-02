@@ -1,7 +1,9 @@
 "use client"
 
 import { RootState } from "@/redux/store";
+import { Check, Lock } from "lucide-react";
 import { motion } from "motion/react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 
@@ -26,6 +28,8 @@ const STEPS: Step[] = [
 const TOTAL_STEPS = STEPS.length
 
 const PartnerDashboard = () => {
+
+    const router = useRouter();
     const [activateStep, setActivateStep] = useState<number>(0);
 
     const userData = useSelector((state: RootState) => state.user.userData)
@@ -33,11 +37,18 @@ const PartnerDashboard = () => {
 
     useEffect(() => {
         if (userData) {
-            setActivateStep(userData.partnerOnBoardingSteps as number)
+            setActivateStep(userData.partnerOnBoardingSteps as number + 1)
         }
     }, [userData])
 
-    const progressPercentage = ((activateStep) / (TOTAL_STEPS)) * 100;
+    const progressPercentage = ((activateStep - 1) / (TOTAL_STEPS - 1)) * 100;
+
+    const goToStep = (step: Step) => {
+        if (step.route && step.id <= activateStep) {
+            router.push(step.route)
+        }
+
+    }
 
     return (
         <div
@@ -65,6 +76,66 @@ const PartnerDashboard = () => {
                             transition={{ duration: 0.6 }}
                             className="absolute top-7 left-0 h-0.75 bg-black rounded-full"
                         />
+
+                        <div
+                            className="relative flex justify-between"
+                        >
+                            {
+                                STEPS.map((s, index) => {
+
+                                    const completed = s.id < activateStep;
+
+                                    const active = s.id == activateStep;
+
+                                    const locked = s.id > activateStep;
+
+
+
+                                    return (
+                                        <motion.div
+                                            key={s.id}
+                                            onClick={()=>goToStep(s)}
+                                            whileHover={!locked ? { scale: 1.1 } : {}}
+                                            className="flex flex-col items-center z-10 cursor-pointer"
+                                        >
+                                            <div
+                                                className={
+                                                    `w-14 h-14 rounded-full flex items-center
+                                                justify-center border-2 transition-all
+
+                                                ${completed ? "bg-black text-white border-black" :
+                                                        active ? "border-black bg-white" :
+                                                            "border-gray-300 text-gray-400 bg-white"
+                                                    }
+                                                `
+                                                }
+                                            >{
+                                                    completed ? (
+                                                        <Check size={20} />
+                                                    ) : (
+                                                        locked ? (
+                                                            <Lock size={20} />
+                                                        ) : (
+                                                            s.id
+                                                        )
+                                                    )
+                                                }
+
+                                            </div>
+                                            <p
+                                                className="mt-3 text-sm font-semibold text-center"
+                                            >
+                                                {
+                                                    s.title
+                                                }
+                                            </p>
+
+                                        </motion.div>
+                                    )
+                                })
+                            }
+
+                        </div>
 
                     </div>
 
