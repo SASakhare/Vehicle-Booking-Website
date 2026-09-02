@@ -7,6 +7,10 @@ import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
 import { MdBookOnline } from "react-icons/md";
 import { toast } from 'sonner'
+
+
+const IFSC_REGEX = /^[A-Z]{4}0[A-Z0-9]{6}$/
+const UPI_REGEX = /^[a-zA-Z0-9._-]{2,256}@[a-zA-Z]{2,64}$/
 const Page = () => {
 
     //* accountHolder, accountNumber, upi, ifsc, mobileNumber 
@@ -18,13 +22,89 @@ const Page = () => {
     const [ifsc, setIfsc] = useState<string>("");
     const [mobileNumber, setMobileNumber] = useState<string>("");
 
+
+    const sanitizedIfsc = ifsc.trim().toUpperCase()
+
+    // ---------------- VALIDATION ----------------
+
+    const isNameValid =
+        /^[A-Za-z\s.'-]{2,100}$/.test(accountHolder.trim())
+
+    const isAccountValid =
+        /^\d{9,18}$/.test(accountNumber.trim())
+
+    const isIfscValid =
+        IFSC_REGEX.test(sanitizedIfsc)
+
+    const isMobileValid =
+        /^[6-9]\d{9}$/.test(mobileNumber.trim())
+
+    const isUpiValid =
+        upi.trim() === "" || UPI_REGEX.test(upi.trim())
+
+    const canSubmit =
+        isNameValid &&
+        isAccountValid &&
+        isIfscValid &&
+        isMobileValid &&
+        isUpiValid
+
+
+    // ---------------- ERROR MESSAGES ----------------
+
+    const nameError =
+        accountHolder.trim() === ""
+            ? "Account holder name is required"
+            : !isNameValid
+                ? "Enter a valid account holder name"
+                : ""
+
+    const accountError =
+        accountNumber.trim() === ""
+            ? "Bank account number is required"
+            : !isAccountValid
+                ? "Account number must contain 9-18 digits"
+                : ""
+
+    const ifscError =
+        ifsc.trim() === ""
+            ? "IFSC code is required"
+            : !isIfscValid
+                ? "Enter a valid 11-character IFSC code"
+                : ""
+
+    const mobileError =
+        mobileNumber.trim() === ""
+            ? "Mobile number is required"
+            : !isMobileValid
+                ? "Enter a valid 10-digit Indian mobile number starting with 6-9"
+                : ""
+
+    const upiError =
+        !isUpiValid
+            ? "Enter a valid UPI ID, for example username@ybl"
+            : ""
+
+
     const handleBankDocs = async () => {
+
+        // Prevent submission if any validation fails
+        if (!canSubmit) {
+            toast.error("Please correct the highlighted fields")
+            return
+        }
+
         try {
             setLoading(true)
 
             const { data } = await axios.post("/api/partner/onboarding/bank", {
-                accountHolder, accountNumber, upi, ifsc, mobileNumber
+                accountHolder,
+                accountNumber,
+                upi,
+                ifsc: sanitizedIfsc,
+                mobileNumber
             });
+
             console.log(data);
             toast.success("Bank documents uploaded successfully")
             setLoading(false)
@@ -37,6 +117,7 @@ const Page = () => {
         }
     }
 
+
     return (
         <div
             className='min-h-screen bg-white flex items-center justify-center px-4'
@@ -48,7 +129,6 @@ const Page = () => {
                 className='w-full max-w-xl bg-white rounded-3xl border border-gray-200 
                 shadow-[0_25px_70px_rgba(0,0,0,0.15)] p-6 sm:p-8'
             >
-
 
                 <div
                     className='relative text-center'
@@ -65,6 +145,7 @@ const Page = () => {
                     <p className='text-xs text-gray-500 font-medium'>
                         Step 3 of 3
                     </p>
+
                     <h1
                         className='text-3xl font-bold mt-1'
                     >
@@ -80,6 +161,9 @@ const Page = () => {
                 <div
                     className='mt-8 space-y-6'
                 >
+
+                    {/* ACCOUNT HOLDER */}
+
                     <div>
                         <label
                             htmlFor='ahn'
@@ -87,6 +171,7 @@ const Page = () => {
                         >
                             Account Holder name
                         </label>
+
                         <div
                             className='flex items-center gap-2 mt-2'
                         >
@@ -95,23 +180,39 @@ const Page = () => {
                             >
                                 <BadgeCheck />
                             </div>
+
                             <input
                                 value={accountHolder}
                                 onChange={(e) => setAccountHolder(e.target.value)}
                                 id='ahn'
                                 type='text'
                                 placeholder='As per Bank records'
-                                className='flex-1 border-b pb-2 text-sm focus:outline-none'
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${
+                                    accountHolder && !isNameValid
+                                        ? 'border-red-500'
+                                        : 'border-gray-300'
+                                }`}
                             />
                         </div>
+
+                        {accountHolder && nameError && (
+                            <p className='text-xs text-red-500 mt-1 ml-8'>
+                                {nameError}
+                            </p>
+                        )}
                     </div>
+
+
+                    {/* ACCOUNT NUMBER */}
+
                     <div>
                         <label
-                            htmlFor='ahn'
+                            htmlFor='accountNumber'
                             className='text-xs font-semibold text-gray-500'
                         >
                             Bank Account Number
                         </label>
+
                         <div
                             className='flex items-center gap-2 mt-2'
                         >
@@ -120,23 +221,40 @@ const Page = () => {
                             >
                                 <CreditCardIcon />
                             </div>
+
                             <input
                                 value={accountNumber}
                                 onChange={(e) => setAccountNumber(e.target.value)}
-                                id='ahn'
+                                id='accountNumber'
                                 type='text'
+                                inputMode='numeric'
                                 placeholder='enter account number'
-                                className='flex-1 border-b pb-2 text-sm focus:outline-none'
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${
+                                    accountNumber && !isAccountValid
+                                        ? 'border-red-500'
+                                        : 'border-gray-300'
+                                }`}
                             />
                         </div>
+
+                        {accountNumber && accountError && (
+                            <p className='text-xs text-red-500 mt-1 ml-8'>
+                                {accountError}
+                            </p>
+                        )}
                     </div>
+
+
+                    {/* IFSC */}
+
                     <div>
                         <label
-                            htmlFor='ahn'
+                            htmlFor='ifsc'
                             className='text-xs font-semibold text-gray-500'
                         >
                             IFSC Code
                         </label>
+
                         <div
                             className='flex items-center gap-2 mt-2'
                         >
@@ -145,23 +263,40 @@ const Page = () => {
                             >
                                 <Landmark />
                             </div>
+
                             <input
                                 value={ifsc}
                                 onChange={(e) => setIfsc(e.target.value)}
-                                id='ahn'
+                                id='ifsc'
                                 type='text'
                                 placeholder='HDFC000'
-                                className='flex-1 border-b pb-2 text-sm focus:outline-none'
+                                maxLength={11}
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${
+                                    ifsc && !isIfscValid
+                                        ? 'border-red-500'
+                                        : 'border-gray-300'
+                                }`}
                             />
                         </div>
+
+                        {ifsc && ifscError && (
+                            <p className='text-xs text-red-500 mt-1 ml-8'>
+                                {ifscError}
+                            </p>
+                        )}
                     </div>
+
+
+                    {/* MOBILE NUMBER */}
+
                     <div>
                         <label
-                            htmlFor='ahn'
+                            htmlFor='mobileNumber'
                             className='text-xs font-semibold text-gray-500'
                         >
                             Mobile Number
                         </label>
+
                         <div
                             className='flex items-center gap-2 mt-2'
                         >
@@ -170,23 +305,41 @@ const Page = () => {
                             >
                                 <Phone />
                             </div>
+
                             <input
                                 value={mobileNumber}
                                 onChange={(e) => setMobileNumber(e.target.value)}
-                                id='ahn'
+                                id='mobileNumber'
                                 type='text'
+                                inputMode='numeric'
+                                maxLength={10}
                                 placeholder='10 digit mobile number'
-                                className='flex-1 border-b pb-2 text-sm focus:outline-none'
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${
+                                    mobileNumber && !isMobileValid
+                                        ? 'border-red-500'
+                                        : 'border-gray-300'
+                                }`}
                             />
                         </div>
+
+                        {mobileNumber && mobileError && (
+                            <p className='text-xs text-red-500 mt-1 ml-8'>
+                                {mobileError}
+                            </p>
+                        )}
                     </div>
+
+
+                    {/* UPI */}
+
                     <div>
                         <label
-                            htmlFor='ahn'
+                            htmlFor='upi'
                             className='text-xs font-semibold text-gray-500'
                         >
                             UPI ID (optional)
                         </label>
+
                         <div
                             className='flex items-center gap-2 mt-2'
                         >
@@ -195,29 +348,44 @@ const Page = () => {
                             >
                                 <MdBookOnline size={28} />
                             </div>
+
                             <input
                                 value={upi}
                                 onChange={(e) => setUpi(e.target.value)}
-                                id='ahn'
+                                id='upi'
                                 type='text'
                                 placeholder='username@ybl'
-                                className='flex-1 border-b pb-2 text-sm focus:outline-none'
+                                className={`flex-1 border-b pb-2 text-sm focus:outline-none ${
+                                    upi && !isUpiValid
+                                        ? 'border-red-500'
+                                        : 'border-gray-300'
+                                }`}
                             />
                         </div>
+
+                        {upi && upiError && (
+                            <p className='text-xs text-red-500 mt-1 ml-8'>
+                                {upiError}
+                            </p>
+                        )}
                     </div>
 
                 </div>
+
 
                 <div
                     className='mt-6 flex items-start gap-3 text-xs text-gray-500'
                 >
                     <CheckCircle />
+
                     <p>
                         Bank details are verified before first payout.
                         This usually takes 24-48 hours.
                     </p>
 
                 </div>
+
+
                 {
                     !loading ? (
                         <motion.button
@@ -245,8 +413,6 @@ const Page = () => {
                         </motion.button>
                     )
                 }
-
-
 
             </motion.div>
         </div >
